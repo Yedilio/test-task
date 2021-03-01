@@ -1,65 +1,107 @@
 import Head from 'next/head'
+import React, { useState } from "react";
 import styles from '../styles/Home.module.css'
 
+import Buttons from "./components/Buttons";
+import Timer from "./components/Timer";
+import CurrentSum from "./components/CurrentSum";
+import Stars from "./components/Stars";
+
 export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    const [time, setTime] = useState({ms:0, s:0, m:0, h:0});
+    const [interv, setInterv] = useState();
+    const [status, setStatus] = useState(0);
+    let currentSum = 0;
+    const [total, setTotal] = useState(0);
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+    function getRandomInt(min, max){
+        const random = Math.floor(Math.random() * (max - min + 1)) + min;
+        return random === 0 ? getRandomInt( -5, 5 ) : random;
+    }
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+    const start = () => {
+        const number = getRandomInt( -5, 5 );
+        currentSum = number;
+        setTotal(number);
+        console.log('totalSum: ', currentSum)
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+        run();
+        setStatus(1);
+        setInterv(setInterval(run, 10));
+    };
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+    let updatedMs = time.ms, updatedS = time.s, updatedM = time.m, updatedH = time.h;
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+    const run = () => {
+        if(updatedM === 60){
+            updatedH++;
+            updatedM = 0;
+        }
+        if(updatedS === 60){
+            updatedM++;
+            updatedS = 0;
+        }
+        if(updatedMs === 100){
+            updatedS++;
+            updatedMs = 0;
+        }
+        updatedMs++;
+        return setTime({ms:updatedMs, s:updatedS, m:updatedM, h:updatedH});
+    }
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    const stop = () => {
+        clearInterval(interv);
+        setStatus(2)
+    }
+
+    const reset = () => {
+        clearInterval(interv);
+        setStatus(0);
+        setTime({ms:0, s:0, m:0, h:0})
+    }
+
+    const resume = () => start();
+
+    return (
+        <div className={styles.container}>
+            <Head>
+                <title>Sarsen Yedil</title>
+                <link rel="icon" href="/test.png" />
+            </Head>
+
+            <main className={styles.main}>
+                <img src="/cosmos.png" alt=""/>
+
+                <div className={styles.stopwatch}>
+                    <Timer time={time}/>
+                    <Buttons status={status}
+                             start={start}
+                             resume={resume}
+                             reset={reset}
+                             stop={stop}
+                    />
+                    <CurrentSum currentSum={currentSum}/>
+                </div>
+
+                <div className={styles.redBox}>
+                    <div className={styles.relative}>
+                        <div className={styles.stars}>
+                            <Stars currentSum={total} />
+
+                            <div className={styles.progress1}>
+                                <img src="/star.svg" alt=""/>
+                                <div className={styles.sum}>{total}</div>
+                            </div>
+
+                            <div className={styles.progress2}>
+                                <img src="/star.svg" alt=""/>
+                                <div className={styles.sum}>{total}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+    )
 }
